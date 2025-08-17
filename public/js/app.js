@@ -6,7 +6,6 @@ import WindowCalculator from './calculator.js';
 import previewService from './previewService.js';
 
 document.addEventListener('alpine:init', () => {
-  console.log("✅ Alpine component registered");
   Alpine.data('windowCalculator', () => ({
     cost: 0,
     isLoading: false,
@@ -28,14 +27,15 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    // New preview method
+    // --- Preview updater ---
     async updatePreview() {
-      const noOfPanels = document.getElementById('noOfPanels')?.value;
-      const fixedPartition = document.getElementById('fixedPartition')?.value;
-      
-      if (noOfPanels && fixedPartition) {
-        await previewService.updatePreview('sliding', `${noOfPanels}-${fixedPartition}`);
-      }
+      const noOfPanels = document.getElementById("noOfPanels").value;
+      const fixedPartition = document.getElementById("fixedPartition").value;
+
+      previewService.updatePreview(
+        "sliding",
+        `${noOfPanels}-${fixedPartition}`
+      );
     },
 
     async calculateCost() {
@@ -102,21 +102,3 @@ document.addEventListener('alpine:init', () => {
     }
   }));
 });
-
-    document.addEventListener('alpine:init', () => {
-      Alpine.data('windowCalculator', () => ({
-        // Alpine component methods
-        updatePreview() {
-          const noOfPanels = document.getElementById('noOfPanels').value;
-          const fixedPartition = document.getElementById('fixedPartition').value;
-          previewService.updatePreview('sliding', `${noOfPanels}-${fixedPartition}`);
-        },
-        
-        init() {
-          // Initial preview setup
-          this.$nextTick(() => {
-            this.updatePreview();
-          });
-        }
-      }));
-    });
