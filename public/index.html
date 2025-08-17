@@ -73,11 +73,11 @@
         <ul>
             <li>
                 <label>Height (mm):*</label>
-                <input type="text" id="heightId">
+                <input id="heightId" type="number" x-model="height">
             </li>
             <li>
                 <label>Width (mm):*</label>
-                <input type="text" id="widthId">
+                <input id="widthId" type="number" x-model="width">
             </li>
         </ul>
     </div>
@@ -143,7 +143,7 @@
             </li>
             <li>
             <div class="calculateCost">
-                <button class="startButton" onclick="start()">Calculate Cost</button>
+                <button class="startButton" @click="start()">Calculate Cost</button>
                 <input type="text" id="cost" readonly> <!-- Add `readonly` if the input is not editable -->
             </div>                
             </li>

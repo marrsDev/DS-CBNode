@@ -1,5 +1,4 @@
 // public/js/app.js
-
 import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js';
 import WindowCalculator from './calculator.js';
 import apiClient from './api-client.js';
@@ -8,112 +7,70 @@ import previewService from './previewService.js';
 console.log("✅ app.js loaded");
 
 document.addEventListener('alpine:init', () => {
+  console.log("✅ alpine:init fired");
+
   Alpine.data('windowCalculator', () => ({
-    cost: 0,
+    // --- Alpine state (all form fields bound via x-model in index.html) ---
+    width: '',
+    height: '',
+    noOfPanels: '',
+    fixedPartition: '',
+    glassType: '',
+    glassThickness: '',
+    profileColour: '',
+    material: '',
+
+    // --- UI state ---
     isLoading: false,
     error: null,
+    result: null,
 
-    async init() {
-      // Load initial config
-      await this.loadConfig();
-      // Initialize preview with current values
-      this.updatePreview();
+    init() {
+      console.log("✅ Alpine component initialized");
     },
 
-    async loadConfig() {
-      try {
-        const config = await apiClient.getCurrentConfig();
-        // You can use this to set default values if needed
-      } catch (error) {
-        this.error = 'Failed to load configuration';
-      }
-    },
+    async start() {
+      console.log("▶️ start() called with:", {
+        width: this.width,
+        height: this.height,
+        material: this.material,
+      });
 
-    // --- Preview updater ---
-    async updatePreview() {
-      const noOfPanels = document.getElementById("noOfPanels").value;
-      const fixedPartition = document.getElementById("fixedPartition").value;
-
-      previewService.updatePreview(
-        "sliding",
-        `${noOfPanels}-${fixedPartition}`
-      );
-    },
-
-    async calculateCost() {
       this.isLoading = true;
       this.error = null;
+      this.result = null;
 
-      const params = {
-        height: document.getElementById('heightId').value,
-        width: document.getElementById('widthId').value,
-        noOfPanels: document.getElementById('noOfPanels').value,
-        fixedPartition: document.getElementById('fixedPartition').value,
-        glassType: this.glassType,
-        glassThickness: this.glassThickness,
-        profileColour: this.profileColour
-      };
-
-      const result = await WindowCalculator.calculate(params); // Pass params
-      
-      if (result.success) {
-        this.cost = result.cost;
-        await this.updatePreview(); // Use the integrated preview method
-      } else {
-        this.error = result.error;
-      }
-      
-      this.isLoading = false;
-      console.log('Calculating with params:', params);
-    },
-
-    // Add to cart method
-    async addToCart() {
-      if (!this.cost || this.cost <= 0) {
-        this.error = 'Please calculate cost first';
-        return;
-      }
-      
       try {
-        // Get current configuration
-        const height = document.getElementById('heightId').value;
-        const width = document.getElementById('widthId').value;
-        const glassType = document.getElementById('glassType').value;
-        const glassThickness = document.getElementById('glassThickness').value;
-        const profileColour = document.getElementById('profileColour').value;
-        
-        // Determine window type based on selections
-        const windowType = this.determineWindowType();
-        
-        await apiClient.addToCart({
-          windowType,
-          measurements: { height, width },
-          glassType,
-          glassThickness,
-          profileColour,
-          unitPrice: this.cost
-        });
-        
-        // Show success message
-        this.error = null;
-        alert('Added to cart successfully!');
-      } catch (error) {
-        this.error = error.message;
-      }
-    },
+        // ✅ Gather params directly from reactive Alpine state
+        const params = {
+          height: this.height,
+          width: this.width,
+          noOfPanels: this.noOfPanels,
+          fixedPartition: this.fixedPartition,
+          glassType: this.glassType,
+          glassThickness: this.glassThickness,
+          profileColour: this.profileColour,
+          material: this.material,
+        };
 
-    // --- Lifecycle hook ---
-    init() {
-      console.log("✅ Alpine component init called");
-      this.$nextTick(() => {
-        this.updatePreview();
-      });
+        // ✅ Delegate calculation logic to WindowCalculator
+        const result = await WindowCalculator.calculate(params);
+        this.result = result;
+
+        console.log("✅ Calculation result:", result);
+
+        // (Optional) call previewService if needed
+        // await previewService.updatePreview(params);
+
+      } catch (err) {
+        console.error("❌ start() failed:", err);
+        this.error = err.message || 'An unexpected error occurred';
+      } finally {
+        this.isLoading = false;
+      }
     }
   }));
 });
 
-// Expose Alpine to window so devtools/plugins can see it
 window.Alpine = Alpine;
-
-// Start Alpine
 Alpine.start();
