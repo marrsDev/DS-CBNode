@@ -1,9 +1,12 @@
 // public/js/app.js
+
+console.log("✅ app.js loaded");
 import apiClient from './api-client.js';
 import WindowCalculator from './calculator.js';
 import previewService from './previewService.js';
 
 document.addEventListener('alpine:init', () => {
+  console.log("✅ Alpine component registered");
   Alpine.data('windowCalculator', () => ({
     cost: 0,
     isLoading: false,
