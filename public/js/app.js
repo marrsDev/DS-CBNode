@@ -99,3 +99,21 @@ document.addEventListener('alpine:init', () => {
     }
   }));
 });
+
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('windowCalculator', () => ({
+        // Alpine component methods
+        updatePreview() {
+          const noOfPanels = document.getElementById('noOfPanels').value;
+          const fixedPartition = document.getElementById('fixedPartition').value;
+          previewService.updatePreview('sliding', `${noOfPanels}-${fixedPartition}`);
+        },
+        
+        init() {
+          // Initial preview setup
+          this.$nextTick(() => {
+            this.updatePreview();
+          });
+        }
+      }));
+    });
