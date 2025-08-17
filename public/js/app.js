@@ -1,9 +1,11 @@
 // public/js/app.js
 
-console.log("✅ app.js loaded");
-import apiClient from './api-client.js';
+import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js';
 import WindowCalculator from './calculator.js';
+import apiClient from './api-client.js';
 import previewService from './previewService.js';
+
+console.log("✅ app.js loaded");
 
 document.addEventListener('alpine:init', () => {
   Alpine.data('windowCalculator', () => ({
@@ -52,7 +54,6 @@ document.addEventListener('alpine:init', () => {
         profileColour: this.profileColour
       };
 
-      
       const result = await WindowCalculator.calculate(params); // Pass params
       
       if (result.success) {
@@ -99,6 +100,20 @@ document.addEventListener('alpine:init', () => {
       } catch (error) {
         this.error = error.message;
       }
+    },
+
+    // --- Lifecycle hook ---
+    init() {
+      console.log("✅ Alpine component init called");
+      this.$nextTick(() => {
+        this.updatePreview();
+      });
     }
   }));
 });
+
+// Expose Alpine to window so devtools/plugins can see it
+window.Alpine = Alpine;
+
+// Start Alpine
+Alpine.start();
