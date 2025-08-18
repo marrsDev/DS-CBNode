@@ -1,11 +1,15 @@
 // routes/api/calculationRoutes.js
+console.log("▶ calculationRoutes module loaded");
+
 const express = require('express');
 const router = express.Router();
 const CalculationService = require('../../services/CalculationService');
 const calculationController = require('../../controllers/calculationController');
+console.log("▶ calculationRoutes router creation OK:", typeof router);
 
 
 router.post('/window', async (req, res) => {
+  console.log("▶ calculationRoutes POST / reached with body:", req.body);
   try {
     const { height, width, noOfPanels, fixedPartition } = req.body;
     

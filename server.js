@@ -69,28 +69,47 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ✅ Safe debug snippet – won’t crash if _router is undefined
-if (app._router && app._router.stack) {
-  app._router.stack.forEach(middleware => {
-    if (middleware.route) {
-      // Directly mounted route
-      console.log(`Route: ${middleware.route.path}`);
-    } else if (middleware.name === 'router' && middleware.handle.stack) {
-      // Router middleware
-      middleware.handle.stack.forEach(handler => {
-        if (handler.route) {
-          console.log(`Route: ${handler.route.path}`);
-        }
-      });
-    }
-  });
-} else {
-  console.log("⚠️ No routes registered on app._router yet");
-}
 
 // Start server
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // Defer inspection until after startup
+  process.nextTick(() => {
+    if (!app._router || !app._router.stack) {
+      console.warn("⚠ No Express routes mounted (app._router empty).");
+      return;
+    }
+
+    console.log("=== Mounted API Routes ===");
+
+    function getPathFromRegexp(regexp) {
+      const match = regexp
+        .toString()
+        .replace('/^\\', '') 
+        .replace('\\/?(?=\\/|$)/i', '') 
+        .replace(/\\\//g, '/');
+      return match === '' ? '/' : match;
+    }
+
+    function printRoutesRaw(stack, parentPath = '') {
+      stack.forEach(layer => {
+        if (layer.route) {
+          const methods = Object.keys(layer.route.methods).map(m => m.toUpperCase());
+          console.log(`ROUTE: ${parentPath}${layer.route.path} | Methods: ${methods.join(', ')}`);
+        } else if (layer.name === 'router' && layer.handle.stack) {
+          const mountPath = getPathFromRegexp(layer.regexp);
+          printRoutesRaw(layer.handle.stack, parentPath + mountPath);
+        }
+      });
+    }
+
+    printRoutesRaw(app._router.stack);
+    console.log("==========================");
+  });
 });
+
+
